@@ -1,0 +1,5 @@
+Dazzle_New/GoogleService-Info.plist
+*.xcworkspace
+Pods/
+DerivedData/
+xcuserdata/
