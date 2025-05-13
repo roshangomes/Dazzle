@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseFirestore
 
 struct Static {
     let image : UIImage
@@ -38,9 +39,10 @@ struct PopLabel {
 }
 
 struct Creator {
-    let title : String
-    let design : String
-    let image : UIImage
+    let id: String
+    let name: String
+    let profileImage: String
+    let postCount: Int  // Ensure this property exists
 }
 
 struct LeaderBLabel {
@@ -98,14 +100,13 @@ struct Design {
 }
 
 struct Post {
-    let profileImage : UIImage
-    let name : String
-    let time : String
-    let desc : String
-    let hashtag : String
-    let postImage : UIImage
-    
+    let id: String
+    let title: String
+    let desc: String
+    let likes: Int
+    let imageUrl: String
 }
+
 
 
 struct TShirtDesign {
@@ -132,25 +133,45 @@ struct User {
 }
 
 struct CommunityPost {
+    let postId: String
     var username: String
     var uid: String
     var profileImageUrl: String
     var timeAgo: String
     var postDescription: String
     var likeCount: Int
+    var isLiked: Bool // Track if current user liked it
     var postImages: [String]  // Array of image URLs
     
-
-    init(dictionary: [String: Any]) {
-        self.username = dictionary["username"] as? String ?? "Unknown"
-        self.uid = dictionary["uid"] as? String ?? ""
-        self.profileImageUrl = dictionary["profileImageUrl"] as? String ?? ""
-        self.timeAgo = "Just now"  // You can convert timestamp later
-        self.postDescription = dictionary["description"] as? String ?? ""
-        self.likeCount = dictionary["likes"] as? Int ?? 0
-        self.postImages = dictionary["imageUrls"] as? [String] ?? []
-    }
     
+
+    init(document: DocumentSnapshot, currentUserId: String) {
+        let data = document.data() ?? [:]
+        
+        self.postId = document.documentID
+        self.username = data["username"] as? String ?? "Unknown"
+        self.uid = data["uid"] as? String ?? ""
+        self.profileImageUrl = data["profileImageUrl"] as? String ?? ""
+        self.timeAgo = "Just now"  // Convert Firestore timestamp later
+        self.postDescription = data["description"] as? String ?? ""
+        self.likeCount = data["likes"] as? Int ?? 0
+        self.postImages = data["imageUrls"] as? [String] ?? []
+        
+        // Check if the current user has liked the post
+        self.isLiked = false  // Default value
+        
+        // 🔹 Convert Firestore timestamp to Date
+               if let timestamp = data["createdAt"] as? Timestamp {
+                   let postDate = timestamp.dateValue()
+                   self.timeAgo = CommunityPost.timeAgoSinceDate(postDate) // Convert to readable time
+               } else {
+                   self.timeAgo = "Unknown" // Fallback value
+               }
+        
+        if let likedUsers = data["likedUsers"] as? [String], likedUsers.contains(currentUserId) {
+            self.isLiked = true
+        }}
+        
     static func timeAgoSinceDate(_ date: Date) -> String {
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
@@ -186,9 +207,10 @@ struct Leaderboard {
     let title: String?
 }
 struct LeaderboardUser {
+    let uid: String
     let name: String         // User's name
-    let image: UIImage       // User's profile image
-    let likes: Int           // Number of likes or points
+    let image: String      // User's profile image
+    var likes: Int           // Number of likes or points
 }
 
 struct LeaderboardEntry {
@@ -262,13 +284,13 @@ let pops : [PopLabel] = [
 
 
 
-let creators : [Creator] = [
-    Creator(title: "Jay Robe", design: "20 Designs", image: UIImage(named: "profile1")!),
-    Creator(title: "Jay Robe", design: "20 Designs", image: UIImage(named: "profile5")!),
-    Creator(title: "Jay Robe", design: "20 Designs", image: UIImage(named: "profile4")!),
-    Creator(title: "Jay Robe", design: "20 Designs", image: UIImage(named: "profile3")!),
-    Creator(title: "Jay Robe", design: "20 Designs", image: UIImage(named: "profile2")!),
-    ]
+//let creators : [Creator] = [
+//    Creator(title: "Jay Robe", design: "20 Designs", image: UIImage(named: "profile1")!),
+//    Creator(title: "Jay Robe", design: "20 Designs", image: UIImage(named: "profile5")!),
+//    Creator(title: "Jay Robe", design: "20 Designs", image: UIImage(named: "profile4")!),
+//    Creator(title: "Jay Robe", design: "20 Designs", image: UIImage(named: "profile3")!),
+//    Creator(title: "Jay Robe", design: "20 Designs", image: UIImage(named: "profile2")!),
+//    ]
 
 
 
@@ -350,9 +372,9 @@ let designs : [Design] = [
 
 
 
-let posts : [Post] = [
-    Post(profileImage: UIImage(named: "profile4")!, name: "Warren Buffet shared a post.", time: "56 mins ago", desc: "Pirates on the go design inspired from the pirates of the caribbean.", hashtag: "#poc #pirates #cool", postImage: UIImage(named: "Design4")!)
-]
+//let posts : [Post] = [
+//    Post(profileImage: UIImage(named: "profile4")!, name: "Warren Buffet shared a post.", time: "56 mins ago", desc: "Pirates on the go design inspired from the pirates of the caribbean.", hashtag: "#poc #pirates #cool", postImage: UIImage(named: "Design4")!)
+//]
 
 
 
@@ -364,7 +386,7 @@ class Datamodel {
     
     
     static var sampleUsers: [User] = [
-        User(username: "sarah2201", profileImageName: UIImage(named: "profile4")!, makepostLabel: "Make a post"),
+        User(username: "sarah2201", profileImageName: UIImage(named: "default1")!, makepostLabel: "Make a post"),
        ]
     
     
@@ -381,28 +403,28 @@ class Datamodel {
     
     
     
-    static var allUsers = [
-           LeaderboardUser(name: "Alice", image: UIImage(named: "profile4")!, likes: 400),
-           LeaderboardUser(name: "Bob", image: UIImage(named: "profile3")!, likes: 10),
-           LeaderboardUser(name: "Charlie", image: UIImage(named: "profile7")!, likes: 110),
-           LeaderboardUser(name: "Dave", image: UIImage(named: "profile5")!, likes: 75)
-       ]
+//    static var allUsers = [
+//           LeaderboardUser(name: "Alice", image: UIImage(named: "profile4")!, likes: 400),
+//           LeaderboardUser(name: "Bob", image: UIImage(named: "profile3")!, likes: 10),
+//           LeaderboardUser(name: "Charlie", image: UIImage(named: "profile7")!, likes: 110),
+//           LeaderboardUser(name: "Dave", image: UIImage(named: "profile5")!, likes: 75)
+//       ]
 
        // LeaderboardEntry initialized with default rankings
-       static var leaderboardEntry: LeaderboardEntry = {
-           var entry = LeaderboardEntry(
-               firstUser: allUsers[0],
-               secondUser: allUsers[1],
-               thirdUser: allUsers[2]
-           )
-           entry.updateRanking(with: allUsers)
-           return entry
-       }()
-
-    
+//       static var leaderboardEntry: LeaderboardEntry = {
+//           var entry = LeaderboardEntry(
+//               firstUser: allUsers[0],
+//               secondUser: allUsers[1],
+//               thirdUser: allUsers[2]
+//           )
+//           entry.updateRanking(with: allUsers)
+//           return entry
+//       }()
+//
+//    
     static var leaderboard: [Leaderboard] = [
         Leaderboard(
-                    rank: 1,
+                    rank: 4,
                     username: "Dylan Harper",
                     profileImage:UIImage(named: "profile1") ?? UIImage(systemName: "person.circle"),
                     likes: 500,
@@ -411,7 +433,7 @@ class Datamodel {
                     title: "Top Innovator"
                 ),
                 Leaderboard(
-                    rank: 2,
+                    rank: 5,
                     username: "Ella Brown",
                     profileImage: UIImage(named: "profile2") ?? UIImage(systemName: "person.circle"),
                     likes: 450,
@@ -420,7 +442,7 @@ class Datamodel {
                     title: "Creative Leader"
                 ),
                 Leaderboard(
-                    rank: 3,
+                    rank: 6,
                     username: "Frank White",
                     profileImage: UIImage(named: "profile4") ?? UIImage(systemName: "person.circle"),
                     likes: 400,

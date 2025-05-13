@@ -11,6 +11,10 @@ class CommunityViewController: UIViewController, UICollectionViewDelegate {
     
     
     let viewModel = PostViewModel()
+    
+    let leaderboardViewModel = LeaderboardViewModel()
+    var leaderboardUsers: [LeaderboardUser] = []
+
 
     
     
@@ -31,6 +35,7 @@ class CommunityViewController: UIViewController, UICollectionViewDelegate {
         
             // Fetching Posts
         fetchPosts()
+        fetchLeaderboard()
         
         }
     
@@ -48,6 +53,16 @@ class CommunityViewController: UIViewController, UICollectionViewDelegate {
             }
         }
     
+    
+    // Fetch leaderboard function
+    func fetchLeaderboard() {
+        leaderboardViewModel.fetchLeaderboard {
+            self.leaderboardUsers = Array(self.leaderboardViewModel.topThreeUsers.prefix(3))
+            DispatchQueue.main.async {
+                self.collectionView.reloadData()
+            }
+        }
+    }
        
     
     
@@ -132,7 +147,7 @@ class CommunityViewController: UIViewController, UICollectionViewDelegate {
             return NSCollectionLayoutSection(group: group)
             
         case 2: // Contact Designer (horizontal layout)
-            let itemSize = NSCollectionLayoutSize(widthDimension: .absolute(120), heightDimension: .absolute(170))
+            let itemSize = NSCollectionLayoutSize(widthDimension: .absolute(300), heightDimension: .absolute(170))
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
             item.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
             
@@ -306,6 +321,8 @@ class CommunityViewController: UIViewController, UICollectionViewDelegate {
                     return cell
                 }
                 
+        
+                
             case 1: // "Explore"
                 switch indexPath.section {
                 case 0: // Title Cell
@@ -313,24 +330,64 @@ class CommunityViewController: UIViewController, UICollectionViewDelegate {
                     return cell
                     
 //                case 1: // Other Posts
-//                    let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "OtherCollectionViewCell", for: indexPath) as! OtherPostsCollectionViewCell
-//                            cell.configure(with: viewModel.posts[indexPath.item])
-//                            return cell// Configure cell with the same post data
-//                    
+//                    let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "OtherPostsCell", for: indexPath)
+//                    if let otherPostsCell = cell as? OtherPostsCollectionViewCell {
+//                        let post = Datamodel.CommunityPosts[indexPath.row] // Assuming indexPath.row for the actual posts
+//                        otherPostsCell.configure(with: post)
+//                    }
+//                    return cell
+                
+                case 2: // Title Cell
+                    let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ConDesTitleCell", for: indexPath)
+                    return cell
+                
+                case 3: // Contact Designers
+                    let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ContactDesignerCell", for: indexPath)
+                    if let contactCell = cell as? ContactDesignerCollectionViewCell {
+                        let designer = Datamodel.designers[indexPath.row]
+                        contactCell.configure(with: designer)
+                    }
+                    return cell
+                    
+                case 4: // Title Cell
+                    let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FitsTitleCell", for: indexPath)
+                    return cell
+                    
+                case 5: // Designs Explore
+                    let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DesignsExploreCell", for: indexPath)
+                    if let designsCell = cell as? DesignsExploreCollectionViewCell {
+                        let design = Datamodel.sampleDesigns[indexPath.row] // Assuming array of designs
+                        designsCell.configure(with: design)
+                    }
+                    return cell
+                    
+                case 6: // Title Cell
+                    let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ConPeopTitleCell", for: indexPath)
+                    return cell
+                    
+                case 7: // Connect People
+                    let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ConnectPeopleCell", for: indexPath)
+                    if let connectCell = cell as? ConnectPeopleCollectionViewCell {
+                        let person = Datamodel.connectPeopleData[indexPath.row] // Assuming array of people
+                        connectCell.configure(with: person)
+                    }
+                    return cell
                     
                 default:
-                    return UICollectionViewCell()  // Default empty cell
+                    return UICollectionViewCell()
                 }
+                
                 
             case 2: // "LeaderBoard"
                 if indexPath.section == 0 {
-                    let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TopUserCell", for: indexPath)
-                    if let userCell = cell as? LeaderBoard2CollectionViewCell {
-                        let leaderboardEntry = Datamodel.leaderboardEntry
-                        userCell.configure(with: leaderboardEntry)
-                    }
-                    return cell
-                } else if indexPath.section == 1 {
+                       let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TopUserCell", for: indexPath) as! LeaderBoard2CollectionViewCell
+                       
+                       // Pass the top 3 users from ViewModel
+                       cell.configure(with: leaderboardViewModel.topThreeUsers)
+                       
+                       return cell
+                   }
+                else if indexPath.section == 1 {
                     let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TitleCell", for: indexPath)
                     return cell
                 } else {

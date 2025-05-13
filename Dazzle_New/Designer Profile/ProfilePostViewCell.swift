@@ -1,4 +1,11 @@
 //
+//  ProfilePostViewCell.swift
+//  Dazzle_New
+//
+//  Created by Steve on 17/03/25.
+//
+
+//
 //  PostsCollectionViewCell.swift
 //  Dazzle
 //
@@ -10,20 +17,27 @@ import SDWebImage
 import FirebaseAuth
 import FirebaseFirestore
 
-class Posts2CollectionViewCell: UICollectionViewCell, UICollectionViewDelegate, UICollectionViewDataSource {
-    @IBOutlet weak var profileImageView: UIImageView!
-       @IBOutlet weak var usernameLabel: UILabel!
-       @IBOutlet weak var timeAgoLabel: UILabel!
-       @IBOutlet weak var postDescriptionLabel: UILabel!
-       
-    @IBOutlet weak var postImageCollectionView: UICollectionView!
-    @IBOutlet weak var likeButton: UIButton!
-    @IBOutlet weak var likeLabel: UILabel!
-    @IBOutlet weak var commentButton: UIButton!
-    @IBOutlet weak var commentLabel: UILabel!
-    @IBOutlet weak var shareButton: UIButton!
-    @IBOutlet weak var bookmarkButton: UIButton!
+class ProfilePostViewCell: UICollectionViewCell, UICollectionViewDelegate, UICollectionViewDataSource {
     
+    @IBOutlet weak var ProfileImageView: UIImageView!
+    @IBOutlet weak var UsernameLabel: UILabel!
+    @IBOutlet weak var TimeAgoLabel: UILabel!
+
+    @IBOutlet weak var BioLabel: UILabel!
+    
+    @IBOutlet weak var imageCollectionView: UICollectionView!
+    
+    @IBOutlet weak var likeButton: UIButton!
+    
+    @IBOutlet weak var LikeLabel: UILabel!
+    
+    @IBOutlet weak var commentButton: UIButton!
+    
+    @IBOutlet weak var CommentLabel: UILabel!
+    
+    @IBOutlet weak var ShareButton: UIButton!
+    
+    @IBOutlet weak var BookmarkButton: UIButton!
     
     
     var postImages: [String] = []  // Array of image URLs
@@ -31,8 +45,8 @@ class Posts2CollectionViewCell: UICollectionViewCell, UICollectionViewDelegate, 
 
         override func awakeFromNib() {
             super.awakeFromNib()
-            postImageCollectionView.delegate = self
-            postImageCollectionView.dataSource = self
+            imageCollectionView.delegate = self
+            imageCollectionView.dataSource = self
             
             // Register for profile update notifications
                     NotificationCenter.default.addObserver(self, selector: #selector(updateProfile), name: .profileUpdated, object: nil)
@@ -65,13 +79,13 @@ class Posts2CollectionViewCell: UICollectionViewCell, UICollectionViewDelegate, 
                 
                 // Update UI with the new profile details
                 DispatchQueue.main.async {
-                    self.usernameLabel.text = username
+                    self.UsernameLabel.text = username
                     
                     // Clear memory cache before updating the profile image
                     SDImageCache.shared.clearMemory()
                     
                     if let url = URL(string: profileImageUrl) {
-                        self.profileImageView.sd_setImage(with: url, placeholderImage: UIImage(named: "defaultProfileImage"), options: [.refreshCached])
+                        self.ProfileImageView.sd_setImage(with: url, placeholderImage: UIImage(named: "defaultProfileImage"), options: [.refreshCached])
                     }
                 }
             }
@@ -84,22 +98,22 @@ class Posts2CollectionViewCell: UICollectionViewCell, UICollectionViewDelegate, 
         
         self.post = post
         // Set username and description
-        usernameLabel.text = post.username
-        timeAgoLabel.text = post.timeAgo
-        postDescriptionLabel.text = post.postDescription
-        likeLabel.text = "\(post.likeCount) Likes"
+        UsernameLabel.text = post.username
+        TimeAgoLabel.text = post.timeAgo
+        BioLabel.text = post.postDescription
+        LikeLabel.text = "\(post.likeCount) Likes"
         
         // Load profile image from URL
         if let url = URL(string: post.profileImageUrl) {
-            profileImageView.sd_setImage(with: url, placeholderImage: UIImage(named: "defaultProfileImage"), options: [.refreshCached])
+            ProfileImageView.sd_setImage(with: url, placeholderImage: UIImage(named: "defaultProfileImage"), options: [.refreshCached])
         }
-        profileImageView.contentMode = .scaleAspectFill
-        profileImageView.layer.cornerRadius = profileImageView.frame.width / 2
-        profileImageView.clipsToBounds = true
+        ProfileImageView.contentMode = .scaleAspectFill
+        ProfileImageView.layer.cornerRadius = ProfileImageView.frame.width / 2
+        ProfileImageView.clipsToBounds = true
         
         // Assign post images to the carousel
         self.postImages = post.postImages
-        postImageCollectionView.reloadData()
+        imageCollectionView.reloadData()
         
         // Set like button state
                updateLikeButton()
@@ -166,7 +180,7 @@ class Posts2CollectionViewCell: UICollectionViewCell, UICollectionViewDelegate, 
                 likeButton.setImage(UIImage(systemName: "heart"), for: .normal)
                 likeButton.tintColor = .gray
             }
-            likeLabel.text = "\(post?.likeCount ?? 0) Likes"
+            LikeLabel.text = "\(post?.likeCount ?? 0) Likes"
         }
     
     
@@ -185,3 +199,8 @@ class Posts2CollectionViewCell: UICollectionViewCell, UICollectionViewDelegate, 
    
 
 }
+
+    
+   
+    
+

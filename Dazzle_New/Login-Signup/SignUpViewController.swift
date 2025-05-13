@@ -31,6 +31,13 @@ class SignUpViewController: UIViewController {
     
     @IBOutlet weak var PasswordText: UITextField!
     
+    
+    
+    @IBOutlet weak var designerLabel: UILabel!
+    
+    
+    @IBOutlet weak var designerSwitch: UISwitch!
+    
     @IBOutlet weak var SignUpButton: UIButton!
     
     
@@ -51,6 +58,7 @@ class SignUpViewController: UIViewController {
         alertLabel.isHidden = true
         
         PasswordText.isSecureTextEntry = true
+        designerSwitch.isOn = false // ✅ Ensure toggle is OFF by default
         
         // Add the eye button to the password field
             let eyeButton = UIButton(type: .custom)
@@ -103,6 +111,11 @@ class SignUpViewController: UIViewController {
             return
         }
         
+        let isDesigner = designerSwitch.isOn
+            let userType = isDesigner ? "designer" : "user"  // ✅ Determine userType
+            
+        
+        
         // Show loading indicator
         let loadingAlert = UIAlertController(title: nil, message: "Signing up...\n\n", preferredStyle: .alert)
         let loadingIndicator = UIActivityIndicatorView(style: .large)
@@ -145,7 +158,7 @@ class SignUpViewController: UIViewController {
             // Assign the default profile picture
             self.assignDefaultProfilePicture(userId: userId) { profileImageUrl in
                 // Save user data to Firestore
-                self.saveUserDataToFirestore(uid: userId, username: username, email: email, profileImageUrl: profileImageUrl)
+                self.saveUserDataToFirestore(uid: userId, username: username, email: email, profileImageUrl: profileImageUrl, userType: userType)
                 
                 // Dismiss loading alert and show success message
                 self.dismiss(animated: true) {
@@ -223,8 +236,8 @@ class SignUpViewController: UIViewController {
     }
 
     
-    
-    func saveUserDataToFirestore(uid: String, username: String, email: String, profileImageUrl: String) {
+    //MARK: SAVE USER DATAT TO FIRESTORE
+    func saveUserDataToFirestore(uid: String, username: String, email: String, profileImageUrl: String,userType: String) {
         // Generate custom userId
         let usernamePart = String(username.prefix(4)).lowercased() // First 4 letters of the username
         let uidPart = String(uid.suffix(4)) // Last 4 letters of the Firebase UID
@@ -237,6 +250,7 @@ class SignUpViewController: UIViewController {
             "username": username,
             "email": email,
             "profileImageUrl": profileImageUrl,
+            "userType": userType,   // Store user type in Firestore
             "createdAt": FieldValue.serverTimestamp()
         ]
         
@@ -267,7 +281,6 @@ class SignUpViewController: UIViewController {
             }
         }
     }
-
     
 
     

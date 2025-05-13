@@ -98,19 +98,6 @@ class SignInViewController: UIViewController {
     
     @IBAction func ForgotTapped(_ sender: Any) {
         
-//        guard let email = UsernameText.text, !email.isEmpty else {
-//                    showAlert(message: "Please enter your email to reset your password.")
-//                    return
-//                }
-//                
-//                // Send password reset email
-//                Auth.auth().sendPasswordReset(withEmail: email) { error in
-//                    if let error = error {
-//                        self.showAlert(message: error.localizedDescription)
-//                        return
-//                    }
-//                    self.showAlert(message: "Password reset email sent! Check your inbox.", isSuccess: true)
-//                }
         
     }
     

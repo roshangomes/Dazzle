@@ -1,37 +1,36 @@
-//
-//  postViewModel.swift
-//  Dazzle_New
-//
-//  Created by Steve on 08/02/25.
-//
-
 import FirebaseFirestore
+import FirebaseAuth
 
 class PostViewModel {
     var posts: [CommunityPost] = []
 
-    func fetchPosts(completion: @escaping () -> Void) {
+    func fetchPosts(userSpecific: Bool = false,completion: @escaping () -> Void) {
         let db = Firestore.firestore()
-        
-        // Real-time listener for the posts collection
-        db.collection("posts")
-            .order(by: "createdAt", descending: true)
-            .addSnapshotListener { [weak self] snapshot, error in
-                if let error = error {
-                    print("Error fetching posts: \(error)")
-                    return
-                }
+               let postCollection = db.collection("posts")
+               
+               var query: Query = postCollection.order(by: "createdAt", descending: true)
+
+               // 🔹 If fetching user-specific posts, filter by current user UID
+               if userSpecific, let currentUserId = Auth.auth().currentUser?.uid {
+                   query = query.whereField("uid", isEqualTo: currentUserId)
+               }
+
+               query.addSnapshotListener { [weak self] snapshot, error in
+                   if let error = error {
+                       print("Error fetching posts: \(error)")
+                       return
+                   }
 
                 guard let documents = snapshot?.documents else { return }
                 
                 var posts: [CommunityPost] = []
-                
                 let group = DispatchGroup()
                 
                 for document in documents {
                     group.enter()
                     
                     let postData = document.data()
+                    let postId = document.documentID
                     let postUid = postData["uid"] as? String ?? ""
                     
                     // Fetch username and profileImageUrl from users collection using the post's uid
@@ -50,7 +49,9 @@ class PostViewModel {
                         let username = userData["username"] as? String ?? "Anonymous"
                         let profileImageUrl = userData["profileImageUrl"] as? String ?? ""
                         
-                        var post = CommunityPost(dictionary: postData)
+                        // Use the Firestore document snapshot instead of just passing postId
+                        let currentUserId = Auth.auth().currentUser?.uid ?? ""  // ✅ Define user ID
+                        var post = CommunityPost(document: document, currentUserId: currentUserId)
                         post.username = username
                         post.profileImageUrl = profileImageUrl
                         
@@ -65,7 +66,4 @@ class PostViewModel {
                 }
             }
     }
-    
-    
-
 }

@@ -6,11 +6,21 @@
 //
 
 import UIKit
+import FirebaseFirestore
+import SDWebImage
 
 class HomeScreen2ViewController: UIViewController {
     
     
     @IBOutlet weak var collectionView: UICollectionView!
+    
+    let viewModel = PostViewModel()
+    var posts: [CommunityPost] = []  // Store posts
+    
+    let viewModel2 = TopPostViewModel()  // ViewModel instance
+    
+    
+    let viewModel3 = TopUserViewModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -20,9 +30,39 @@ class HomeScreen2ViewController: UIViewController {
         //    collectionView.collectionViewLayout = UICollectionViewFlowLayout()
         collectionView.collectionViewLayout = createCompositionalLayout()
         
-        //        collectionView.register(UINib(nibName: "StaticCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "StaticCollectionViewCell")
-        //        collectionView.register(UINib(nibName: "PopularCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "PopularCollectionViewCell")
+        fetchPosts()
+        fetchTopPosts()
+        fetchTopUsers()
     }
+    
+    func fetchPosts() {
+        viewModel.fetchPosts { [weak self] in
+            guard let self = self else { return }
+            self.posts = self.viewModel.posts  // ✅ Store posts from ViewModel
+            
+            DispatchQueue.main.async {
+                self.collectionView.reloadData()  // ✅ Reload UI
+            }
+        }
+    }
+    
+    func fetchTopPosts() {
+           viewModel2.fetchTopPosts {
+               DispatchQueue.main.async {
+                   self.collectionView.reloadData()
+               }
+           }
+       }
+    
+    private func fetchTopUsers() {
+            viewModel3.fetchTopUsers { [weak self] in
+                DispatchQueue.main.async {
+                    self?.collectionView.reloadData()
+                }
+            }
+        }
+    
+
     
     
     
@@ -114,15 +154,15 @@ extension HomeScreen2ViewController: UICollectionViewDataSource, UICollectionVie
             return tops.count
         }
         else if section == 2 {
-            return populars.count
+            return viewModel.posts.count
         } else if section == 3 {
             return pops.count
         } else if section == 4 {
-            return creators.count
+            return viewModel3.topUsers.count
         } else if section == 5{
             return leadsB.count
         } else {
-            return leaders.count
+            return viewModel2.topThreePosts.count
         }
         
     }
@@ -138,16 +178,18 @@ extension HomeScreen2ViewController: UICollectionViewDataSource, UICollectionVie
         }
         else if indexPath.section == 2 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PopularCollectionViewCell", for: indexPath) as! PopularCollectionViewCell
-            cell.setup(with: populars[indexPath.row])
-            return cell
+            let post = viewModel.posts[indexPath.item]
+                    cell.configure(with: post)
+                    return cell
             
         } else if indexPath.section == 3{
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PopularLabelCollectionViewCell", for: indexPath) as! PopularLabelCollectionViewCell
             cell.setup(with: pops[indexPath.row])
             return cell
         } else if indexPath.section == 4 {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TopCollectionViewCell", for: indexPath) as! TopCollectionViewCell
-            cell.setup(with: creators[indexPath.row])
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TopCollectionViewCell", for: indexPath) as! TopCreatersCollectionViewCell
+            let user = viewModel3.topUsers[indexPath.item]
+                    cell.setup(with: user)
             return cell
         } else if indexPath.section == 5 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "LeaderLabelCollectionViewCell", for: indexPath) as! LeaderLabelCollectionViewCell
@@ -155,40 +197,13 @@ extension HomeScreen2ViewController: UICollectionViewDataSource, UICollectionVie
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "LeaderBoardCollectionViewCell", for: indexPath) as! LeaderBoardCollectionViewCell
-            cell.setup(with: leaders[indexPath.row])
-            return cell
+
+                    let post = viewModel2.topThreePosts[indexPath.row]
+                    cell.setup(with: post)
+                    
+                    return cell
         }
     }
     
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-//        if indexPath.section == 0 {
-//            return CGSize(width: 393, height: 325)
-//        } else {
-//            return CGSize(width: 200, height: 275)
-//        }
-//        
-//    }
-//    
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-//        if section == 0 {
-//            return UIEdgeInsets(top: 10, left: 0, bottom: 10, right: 0)
-//        } else {
-//            return UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
-//        }
-//    }
-//    
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-//        if section == 1{
-//            return 10
-//        }
-//        return 0
-//    }
-//    
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-//        return 0
-//    }
-//    
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, scrollDirectionForSectionAt section : Int) -> UICollectionView.ScrollDirection {
-//        return section == 1 ? .horizontal : . vertical
-//    }
+
 }

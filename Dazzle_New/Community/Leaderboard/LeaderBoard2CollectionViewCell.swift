@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SDWebImage
 
 class LeaderBoard2CollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var firstLabel: UILabel!
@@ -38,46 +39,43 @@ class LeaderBoard2CollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var thirdView: UIView!
     
     
-    func configure(with leaderboardEntry: LeaderboardEntry) {
-        // Configure the first user
-        firstLabel.text = "#1"
-        firstImageView.image = leaderboardEntry.firstUser.image
-        firstuserLabel.text = leaderboardEntry.firstUser.name
-        firstLikesLabel.text = "\(leaderboardEntry.firstUser.likes) likes"
+    func configure(with leaderboardEntries: [LeaderboardUser]) {
+        
+        
+        guard leaderboardEntries.count >= 3 else { return } // Ensure we have at least 3 users
+        
+        // **1st User**
+        firstuserLabel.text = leaderboardEntries[0].name
+        firstLikesLabel.text = "\(leaderboardEntries[0].likes) Likes"
+        if let url = URL(string: leaderboardEntries[0].image) {
+            firstImageView.sd_setImage(with: url, placeholderImage: UIImage(named: "defaultProfileImage"))
+        }
+        
+        // **2nd User**
+        seconduserLabel.text = leaderboardEntries[1].name
+        secondLikesLabel.text = "\(leaderboardEntries[1].likes) Likes"
+        if let url = URL(string: leaderboardEntries[1].image) {
+            secondImageView.sd_setImage(with: url, placeholderImage: UIImage(named: "defaultProfileImage"))
+        }
+        
+        // **3rd User**
+        thirduserLabel.text = leaderboardEntries[2].name
+        thirdLikesLabel.text = "\(leaderboardEntries[2].likes) Likes"
+        if let url = URL(string: leaderboardEntries[2].image) {
+            thirdImageView.sd_setImage(with: url, placeholderImage: UIImage(named: "defaultProfileImage"))
+        }
+        
+        // Make images circular
         makeImageCircular(imageView: firstImageView)
-
-        // Configure the second user
-        secondLabel.text = "2."
-        secondImageView.image = leaderboardEntry.secondUser.image
-        seconduserLabel.text = leaderboardEntry.secondUser.name
-        secondLikesLabel.text = "\(leaderboardEntry.secondUser.likes) likes"
         makeImageCircular(imageView: secondImageView)
-
-        // Configure the third user
-        thirdLabel.text = "3."
-        thirdImageView.image = leaderboardEntry.thirdUser.image
-        thirduserLabel.text = leaderboardEntry.thirdUser.name
-        thirdLikesLabel.text = "\(leaderboardEntry.thirdUser.likes) likes"
         makeImageCircular(imageView: thirdImageView)
-
-        // Style the views
-        styleView(view: firstView)
-        styleView(view: secondView)
-        styleView(view: thirdView)
+    }
+    private func makeImageCircular(imageView: UIImageView) {
+        imageView.layer.cornerRadius = imageView.frame.width / 2
+        imageView.clipsToBounds = true
+        imageView.layer.borderWidth = 1
+        imageView.layer.borderColor = UIColor.lightGray.cgColor
     }
 
-        
-        // Helper to style views
-        private func styleView(view: UIView) {
-            view.layer.cornerRadius = 10
-            view.layer.masksToBounds = true
-            view.layer.borderWidth = 0.5
-            view.layer.borderColor = UIColor.lightGray.cgColor
-        }
-        
-        // Helper to make images circular
-        private func makeImageCircular(imageView: UIImageView) {
-            imageView.layer.cornerRadius = imageView.frame.width / 2
-            imageView.clipsToBounds = true
-        }
-    }
+    
+}
